@@ -4,7 +4,7 @@
  */
 
 import type * as kafkaTypes from "node-rdkafka";
-
+import * as log from "winston";
 import { Deferred } from "@fluidframework/common-utils";
 import {
 	IConsumer,
@@ -198,6 +198,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
 		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		consumer.on("rebalance", async (err, topicPartitions) => {
+            log.error("REBALANCING PROCEDURE!!!!!!!!!!")
 			if (err.code === this.kafka.CODES.ERRORS.ERR__ASSIGN_PARTITIONS ||
 				err.code === this.kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
 				const newAssignedPartitions = new Set<number>(topicPartitions.map((tp) => tp.partition));
@@ -386,6 +387,8 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 	 * @param message - The message
 	 */
 	private processMessage(message: kafkaTypes.Message) {
+        log.error("IN PROCESS_MESSAGE!!!!!!!!!!")
+
 		const partition = message.partition;
 
 		if (!this.assignedPartitions.has(partition)) {
@@ -406,6 +409,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 		}
 
 		if (this.isRebalancing) {
+            log.error("IN REBALANCING STATE!!!!!!!!!!")
 			/*
 				It is possible to receive messages while we have not yet finished rebalancing
 				due to how we wait for the fetchPartitionEpochs call to finish before emitting the rebalanced event.
