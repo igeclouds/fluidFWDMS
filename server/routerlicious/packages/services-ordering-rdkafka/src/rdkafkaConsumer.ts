@@ -393,6 +393,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
      * @param message - The message
      */
     private processMessage(message: kafkaTypes.Message) {
+        log.error("NEW DATA HAS BEEN RECEIVED!!!!!!!!!!")
         const partition = message.partition;
 
         if (!this.assignedPartitions.has(partition)) {
