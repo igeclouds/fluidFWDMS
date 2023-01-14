@@ -64,10 +64,7 @@ export abstract class RdkafkaBase extends EventEmitter {
                     "Please make sure OpenSSL is available and build rdkafka again.");
             }
 
-            this.sslOptions = {
-                "security.protocol": "ssl",
-                "ssl.ca.location": options?.sslCACertFilePath,
-            };
+            this.sslOptions = {};
         }
 
         setTimeout(() => void this.initialize(), 1);
@@ -95,8 +92,11 @@ export abstract class RdkafkaBase extends EventEmitter {
     protected async ensureTopics() {
         const options: kafkaTypes.GlobalConfig = {
             "client.id": `${this.clientId}-admin`,
-            "metadata.broker.list": this.endpoints.kafka.join(","),
-            ...this.sslOptions,
+            "metadata.broker.list": 'frs-dev2-eventhubs-centralus-002.servicebus.windows.net:9093',
+            "security.protocol": "sasl_ssl",
+            "sasl.mechanisms": "PLAIN",
+            "sasl.username": "$ConnectionString",
+            "sasl.password": 'Endpoint=sb://frs-dev2-eventhubs-centralus-002.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=8Ir2rFHtveflgC6mtRNnmR4u+JmoYpK1HPJVe1mFAJ0=',
         };
 
         const adminClient = this.kafka.AdminClient.create(options);

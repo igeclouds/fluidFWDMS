@@ -4,7 +4,7 @@
  */
 
 import type * as kafkaTypes from "node-rdkafka";
-
+import * as log from "winston";
 import { Deferred } from "@fluidframework/common-utils";
 import {
     IConsumer,
@@ -102,20 +102,27 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
         let consumer: kafkaTypes.KafkaConsumer;
 
         const options: kafkaTypes.ConsumerGlobalConfig = {
-            "metadata.broker.list": this.endpoints.kafka.join(","),
+            "metadata.broker.list": 'frs-dev2-eventhubs-centralus-002.servicebus.windows.net:9093',
             "socket.keepalive.enable": true,
             "socket.nagle.disable": true,
             "client.id": this.clientId,
             "group.id": this.groupId,
             "enable.auto.commit": false,
-            "fetch.min.bytes": 1,
-            "fetch.max.bytes": 1024 * 1024,
             "offset_commit_cb": true,
             "rebalance_cb": this.consumerOptions.optimizedRebalance ?
                 (err: kafkaTypes.LibrdKafkaError, assignments: kafkaTypes.Assignment[]) => this.rebalance(consumer, err, assignments) :
                 true,
-            ...this.consumerOptions.additionalOptions,
-            ...this.sslOptions,
+            "security.protocol": "sasl_ssl",
+            "sasl.mechanisms": "PLAIN",
+            "sasl.username": "$ConnectionString",
+            "sasl.password": 'Endpoint=sb://frs-dev2-eventhubs-centralus-002.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=8Ir2rFHtveflgC6mtRNnmR4u+JmoYpK1HPJVe1mFAJ0=',
+            "connections.max.idle.ms": (4 * 60 - 10) * 1000,
+            "topic.metadata.refresh.interval.ms": (4 * 60 - 30) * 1000,
+            "metadata.max.age.ms": 180000,
+            "fetch.min.bytes": 1,
+            "fetch.max.bytes": 52428800,
+            "fetch.wait.max.ms": 5000,
+            "session.timeout.ms": 60000,
         };
 
         consumer = this.consumer =
@@ -196,6 +203,8 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         consumer.on("rebalance", async (err, topicPartitions) => {
+            log.error("REBALANCING PROCEDURE!!!!!!!!!!")
+
             if (err.code === this.kafka.CODES.ERRORS.ERR__ASSIGN_PARTITIONS ||
                 err.code === this.kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
                 const newAssignedPartitions = new Set<number>(topicPartitions.map((tp) => tp.partition));
@@ -404,6 +413,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
         }
 
         if (this.isRebalancing) {
+            log.error("IN REBALANCING STATE!!!!!!!!!!")
             /*
                 It is possible to receive messages while we have not yet finished rebalancing
                 due to how we wait for the fetchPartitionEpochs call to finish before emitting the rebalanced event.
