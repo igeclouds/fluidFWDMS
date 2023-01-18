@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-var SegfaultHandler = require('segfault-handler');
+import * as SegfaultHandler from "segfault-handler";
 SegfaultHandler.registerHandler("crash.log"); // With no argument, SegfaultHandler will generate a generic log file name
 
 export { IKafkaConsumerOptions, RdkafkaConsumer } from "./rdkafkaConsumer";
