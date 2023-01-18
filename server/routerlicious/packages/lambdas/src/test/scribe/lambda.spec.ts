@@ -40,15 +40,15 @@ describe("Routerlicious", () => {
                 }
             }
 
-            async function sendSummarize(referenceSequenceNumber: number): Promise<void> {
-                const summaryMessage = messageFactory.createSummarize(referenceSequenceNumber, tree.sha);
-                lambda.handler(kafkaMessageFactory.sequenceMessage(summaryMessage, testDocumentId));
+            // async function sendSummarize(referenceSequenceNumber: number): Promise<void> {
+            //     const summaryMessage = messageFactory.createSummarize(referenceSequenceNumber, tree.sha);
+            //     lambda.handler(kafkaMessageFactory.sequenceMessage(summaryMessage, testDocumentId));
 
-                await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+            //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                const ackMessage = messageFactory.createSummaryAck(tree.sha);
-                lambda.handler(kafkaMessageFactory.sequenceMessage(ackMessage, testDocumentId));
-            }
+            //     const ackMessage = messageFactory.createSummaryAck(tree.sha);
+            //     lambda.handler(kafkaMessageFactory.sequenceMessage(ackMessage, testDocumentId));
+            // }
 
             beforeEach(async () => {
                 messageFactory = new MessageFactory(testDocumentId, testClientId, testTenantId);
