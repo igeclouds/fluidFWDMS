@@ -284,7 +284,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
         consumer.on("event.log", (event) => {
             this.emit("log", event);
-            log.error("Kafka consumer log message: " + event.message);
+            log.error(`Kafka consumer log message: ${event.message}`);
         });
 
         consumer.connect();
