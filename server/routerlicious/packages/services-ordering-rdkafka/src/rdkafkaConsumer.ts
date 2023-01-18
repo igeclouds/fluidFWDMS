@@ -134,11 +134,14 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
         consumer.on("ready", () => {
             consumer.subscribe([this.topic]);
+            log.error(`Kafka consumer subscribed to the topic: ${this.topic}`);
 
-            if (this.consumerOptions.automaticConsume) {
-                // start the consume loop
-                consumer.consume();
-            }
+            consumer.consume();
+
+            // if (this.consumerOptions.automaticConsume) {
+            //     // start the consume loop
+            //     consumer.consume();
+            // }
 
             this.emit("connected", consumer);
         });
@@ -149,6 +152,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         consumer.on("connection.failure", async (error) => {
+            log.error(`Kafka consumer connection failure error message: ${error.message}`);
             await this.close(true);
 
             this.error(error);
@@ -272,14 +276,17 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
 
         consumer.on("rebalance.error", (error) => {
             this.error(error);
+            log.error(`Kafka consumer rebalance error message: ${error.message}`);
         });
 
         consumer.on("event.error", (error) => {
             this.error(error);
+            log.error(`Kafka consumer event error message: ${error.message}`);
         });
 
         consumer.on("event.throttle", (event) => {
             this.emit("throttled", event);
+            log.error(`Kafka consumer throttle message: ${event.message}`);
         });
 
         consumer.on("event.log", (event) => {
