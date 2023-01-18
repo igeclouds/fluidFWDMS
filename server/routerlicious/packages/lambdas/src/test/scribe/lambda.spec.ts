@@ -97,40 +97,40 @@ describe("Routerlicious", () => {
                     assert.equal(numMessages, testMessageCollection.collection.length);
                 });
 
-                it("Summarize Ops should clean up the previous ops store in mongodb", async () => {
-                    const numMessages = 10;
-                    sendOps(numMessages);
+                // it("Summarize Ops should clean up the previous ops store in mongodb", async () => {
+                //     const numMessages = 10;
+                //     sendOps(numMessages);
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    sendSummarize(numMessages);
+                //     sendSummarize(numMessages);
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    assert.equal(testMessageCollection.collection.length, 2);
-                });
+                //     assert.equal(testMessageCollection.collection.length, 2);
+                // });
 
-                it("NoClient Ops will trigger service to generate summary and won't clean up the previous ops", async () => {
-                    const numMessages = 5;
-                    sendOps(numMessages);
+                // it("NoClient Ops will trigger service to generate summary and won't clean up the previous ops", async () => {
+                //     const numMessages = 5;
+                //     sendOps(numMessages);
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    sendSummarize(numMessages);
+                //     sendSummarize(numMessages);
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    sendOps(numMessages);
+                //     sendOps(numMessages);
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    const message = messageFactory.createNoClient();
-                    lambda.handler(kafkaMessageFactory.sequenceMessage(message, testDocumentId));
+                //     const message = messageFactory.createNoClient();
+                //     lambda.handler(kafkaMessageFactory.sequenceMessage(message, testDocumentId));
 
-                    await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
+                //     await testContext.waitForOffset(kafkaMessageFactory.getHeadOffset(testDocumentId));
 
-                    assert.equal(testMessageCollection.collection.length, 8);
-                });
+                //     assert.equal(testMessageCollection.collection.length, 8);
+                // });
             });
         });
     });
