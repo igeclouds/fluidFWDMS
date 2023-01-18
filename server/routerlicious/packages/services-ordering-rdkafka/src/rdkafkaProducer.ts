@@ -4,6 +4,7 @@
  */
 
 import type * as kafkaTypes from "node-rdkafka";
+import * as log from "winston";
 import {
 	BoxcarType,
 	IBoxcarMessage,
@@ -125,6 +126,7 @@ export class RdkafkaProducer extends RdkafkaBase implements IProducer {
             "connections.max.idle.ms": (4 * 60 - 10) * 1000,
             "topic.metadata.refresh.interval.ms": (4 * 60 - 30) * 1000,
             "metadata.max.age.ms": 180000,
+            'debug': 'all',
 		};
 
 		const producer: kafkaTypes.Producer = this.connectingProducer =
@@ -170,6 +172,7 @@ export class RdkafkaProducer extends RdkafkaBase implements IProducer {
 
 		producer.on("event.log", (event) => {
 			this.emit("log", event);
+            log.error(`Kafka producer log message: ${event.message}`);
 		});
 
 		producer.connect();
