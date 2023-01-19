@@ -15,6 +15,7 @@ import {
     ZookeeperClientConstructor,
 } from "@fluidframework/server-services-core";
 import { IKafkaBaseOptions, IKafkaEndpoints, RdkafkaBase } from "./rdkafkaBase";
+import * as SegfaultHandler from "segfault-handler";
 
 export interface IKafkaConsumerOptions extends Partial<IKafkaBaseOptions> {
     consumeTimeout: number;
@@ -88,6 +89,8 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
     }
 
     protected connect() {
+        SegfaultHandler.registerHandler("crash.log"); // With no argument, SegfaultHandler will generate a generic log file name
+
         if (this.closed) {
             return;
         }
