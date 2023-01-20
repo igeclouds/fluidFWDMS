@@ -142,7 +142,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
             //     // start the consume loop
             //     consumer.consume();
             // }
-
+            log.error("Kafka consumer consuming!!!");
             this.emit("connected", consumer);
         });
 
@@ -294,7 +294,13 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
             log.error(`Kafka consumer log message: ${event.message}`);
         });
 
-        consumer.connect();
+        try {
+            consumer.connect();
+        } catch (e) {
+            log.error(`Kafka consumer error while connecting!!!` ${e}');
+        }
+        log.error("Kafka consumer connected!!!");
+
     }
 
     public async close(reconnecting: boolean = false): Promise<void> {
