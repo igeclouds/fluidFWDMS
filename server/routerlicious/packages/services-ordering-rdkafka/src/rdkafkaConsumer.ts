@@ -297,7 +297,7 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
         try {
             consumer.connect();
         } catch (e) {
-            log.error(`Kafka consumer error while connecting!!!` ${e}');
+            log.error(`Kafka consumer error while connecting!!! ${e}`);
         }
         log.error("Kafka consumer connected!!!");
 
