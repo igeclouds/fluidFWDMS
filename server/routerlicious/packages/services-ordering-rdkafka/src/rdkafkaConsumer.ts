@@ -92,11 +92,11 @@ export class RdkafkaConsumer extends RdkafkaBase implements IConsumer {
             return;
         }
 
-        const zookeeperEndpoints = this.endpoints.zooKeeper;
-        if (zookeeperEndpoints && zookeeperEndpoints.length > 0 && this.consumerOptions.zooKeeperClientConstructor) {
-            const zooKeeperEndpoint = zookeeperEndpoints[Math.floor(Math.random() % zookeeperEndpoints.length)];
-            this.zooKeeperClient = new this.consumerOptions.zooKeeperClientConstructor(zooKeeperEndpoint);
-        }
+        // const zookeeperEndpoints = this.endpoints.zooKeeper;
+        // if (zookeeperEndpoints && zookeeperEndpoints.length > 0 && this.consumerOptions.zooKeeperClientConstructor) {
+        //     const zooKeeperEndpoint = zookeeperEndpoints[Math.floor(Math.random() % zookeeperEndpoints.length)];
+        //     this.zooKeeperClient = new this.consumerOptions.zooKeeperClientConstructor(zooKeeperEndpoint);
+        // }
 
         // eslint-disable-next-line prefer-const
         let consumer: kafkaTypes.KafkaConsumer;
