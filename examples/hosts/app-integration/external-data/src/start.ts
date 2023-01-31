@@ -54,7 +54,7 @@ async function start(): Promise<void> {
 	} else {
 		id = location.hash.slice(1);
 		model = await tinyliciousModelLoader.loadExisting(id);
-		showExternalServerView = false;
+		showExternalServerView = true;
 	}
 
 	render(model, showExternalServerView);
