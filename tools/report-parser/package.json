@@ -1,0 +1,22 @@
+{
+  "name": "@fluid-internal/report-parser",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Helper function for pipeline report parsing",
+  "homepage": "https://fluidframework.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/FluidFramework.git",
+    "directory": "packages/test/test-utils"
+  },
+  "license": "MIT",
+  "author": "Microsoft and contributors",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "xml2js": "^0.4.23"
+  }
+}
