@@ -28,29 +28,29 @@ class Task extends TypedEventEmitter<ITaskEvents> implements ITask {
 		}
 		return cellValue;
 	}
-	public get incomingName(): string | undefined {
-		return this._incomingName;
+	public get externalName(): string | undefined {
+		return this._externalName;
 	}
-	public set incomingName(newValue: string | undefined) {
-		this._incomingName = newValue;
-		this.emit("incomingNameChanged");
+	public set externalName(newValue: string | undefined) {
+		this._externalName = newValue;
+		this.emit("externalNameChanged");
 	}
-	public get incomingType(): string | undefined {
-		return this._incomingType;
+	public get changeType(): string | undefined {
+		return this._changeType;
 	}
-	public set incomingType(newValue: string | undefined) {
-		this._incomingType = newValue;
+	public set changeType(newValue: string | undefined) {
+		this._changeType = newValue;
 	}
-	public get incomingPriority(): number | undefined {
-		return this._incomingPriority;
+	public get externalPriority(): number | undefined {
+		return this._externalPriority;
 	}
-	public set incomingPriority(newValue: number | undefined) {
-		this._incomingPriority = newValue;
-		this.emit("incomingPriorityChanged");
+	public set externalPriority(newValue: number | undefined) {
+		this._externalPriority = newValue;
+		this.emit("externalPriorityChanged");
 	}
-    private _incomingName: string | undefined;
-    private _incomingPriority: number | undefined;
-    private _incomingType: string | undefined;
+    private _externalName: string | undefined;
+    private _externalPriority: number | undefined;
+    private _changeType: string | undefined;
 	public constructor(
 		private readonly _id: string,
 		private readonly _name: SharedString,
@@ -64,24 +64,24 @@ class Task extends TypedEventEmitter<ITaskEvents> implements ITask {
 			this.emit("priorityChanged");
 		});
 	}
-	public incomingNameChanged = (savedName: string): void => {
-		this.incomingType = "change";
-		this.incomingName = savedName;
+	public externalNameChanged = (externalName: string): void => {
+		this.changeType = "change";
+		this.externalName = externalName;
 	};
-	public incomingPriorityChanged = (savedPriority: number): void => {
-		this.incomingType = "change";
-		this.incomingPriority = savedPriority;
+	public externalPriorityChanged = (externalPriority: number): void => {
+		this.changeType = "change";
+		this.externalPriority = externalPriority;
 	};
-	public overwriteWithIncomingData = (): void => {
-		this.incomingType = undefined;
-		if (this.incomingPriority !== undefined) {
-			this._priority.set(this.incomingPriority);
-			this.incomingPriority = undefined;
+	public overwriteWithExternalData = (): void => {
+		this.changeType = undefined;
+		if (this.externalPriority !== undefined) {
+			this._priority.set(this.externalPriority);
+			this.externalPriority = undefined;
 		}
-		if (this.incomingName !== undefined) {
+		if (this.externalName !== undefined) {
 			const oldString = this._name.getText();
-			this._name.replaceText(0, oldString.length, this.incomingName);
-			this.incomingName = undefined;
+			this._name.replaceText(0, oldString.length, this.externalName);
+			this.externalName = undefined;
 		}
 	};
 }
@@ -108,21 +108,21 @@ export class TaskList extends DataObject implements ITaskList {
 	 */
 	private readonly tasks = new Map<string, Task>();
 	/*
-	 * savedData stores data retrieved from the external source.
+	 * externalDataSnapshot stores data retrieved from the external source.
 	 */
-	private _savedData: SharedMap | undefined;
+	private _externalDataSnapshot: SharedMap | undefined;
 	/*
-	 * draftData is used for storage of the draft Fluid data. It's used with savedData
+	 * draftData is used for storage of the draft Fluid data. It's used with externalDataSnapshot
 	 * to resolve & synchronize the data.
 	 * TODO: Update^ when the sync mechanism is appropriately defined.
 	 */
 	private _draftData: SharedMap | undefined;
 
-	private get savedData(): SharedMap {
-		if (this._savedData === undefined) {
-			throw new Error("The savedData SharedMap has not yet been initialized.");
+	private get externalDataSnapshot(): SharedMap {
+		if (this._externalDataSnapshot === undefined) {
+			throw new Error("The externalDataSnapshot SharedMap has not yet been initialized.");
 		}
-		return this._savedData;
+		return this._externalDataSnapshot;
 	}
 
 	private get draftData(): SharedMap {
@@ -208,7 +208,7 @@ export class TaskList extends DataObject implements ITaskList {
 	 *
 	 * @privateRemarks
 	 *
-	 * TODO: Make this method private - should only be triggered when incoming signal/op indicates that the data
+	 * TODO: Make this method private - should only be triggered when external signal/op indicates that the data
 	 * was updated.
 	 *
 	 * TODO: Is it useful to block further changes during the sync'ing process?
@@ -256,39 +256,39 @@ export class TaskList extends DataObject implements ITaskList {
 
 		// TODO: Delete any items that are in the root but missing from the external data
 		const updateTaskPs = updatedExternalData.map(async ([id, { name, priority }]) => {
-			// Write external data into savedData map.
-			const currentTask = this.savedData.get<PersistedTask>(id);
-			let incomingNameDiffersFromSavedName = false;
-			let incomingPriorityDiffersFromSavedPriority = false;
-			// Create a new task because it doesn't exist already
-			if (currentTask === undefined) {
-				const savedNameString = SharedString.create(this.runtime);
-				const savedPriorityCell = SharedCell.create(this.runtime) as ISharedCell<number>;
-				const savedDataPT: PersistedTask = {
+			// Write external data into externalDataSnapshot map.
+			const existingTask = this.externalDataSnapshot.get<PersistedTask>(id);
+			let externalNameDiffersFromSavedName = false;
+			let externalPriorityDiffersFromSavedPriority = false;
+			// Create a new task in externalDataSnapshot map because it doesn't exist already
+			if (existingTask === undefined) {
+				const newNameString = SharedString.create(this.runtime);
+				const newPriorityCell = SharedCell.create(this.runtime) as ISharedCell<number>;
+				const externalDataSnapshotPT: PersistedTask = {
 					id,
-					name: savedNameString.handle as IFluidHandle<SharedString>,
-					priority: savedPriorityCell.handle as IFluidHandle<ISharedCell<number>>,
+					name: newNameString.handle as IFluidHandle<SharedString>,
+					priority: newPriorityCell.handle as IFluidHandle<ISharedCell<number>>,
 				};
-				savedNameString.insertText(0, name);
-				savedPriorityCell.set(priority);
-				this.savedData.set(id, savedDataPT);
+				newNameString.insertText(0, name);
+				newPriorityCell.set(priority);
+				this.externalDataSnapshot.set(id, externalDataSnapshotPT);
 			} else {
-				// Make changes to exisiting saved tasks
-				const [savedNameString, savedPriorityCell] = await Promise.all([
-					currentTask.name.get(),
-					currentTask.priority.get(),
+				// Make changes to exisiting externalDataSnapshot tasks
+				const [existingNameString, existingPriorityCell] = await Promise.all([
+					existingTask.name.get(),
+					existingTask.priority.get(),
 				]);
-				if (savedNameString.getText() !== name) {
-					incomingNameDiffersFromSavedName = true;
+				if (existingNameString.getText() !== name) {
+					externalNameDiffersFromSavedName = true;
 				}
-				if (savedPriorityCell.get() !== priority) {
-					incomingPriorityDiffersFromSavedPriority = true;
+				if (existingPriorityCell.get() !== priority) {
+					externalPriorityDiffersFromSavedPriority = true;
 				}
-				savedNameString.insertText(0, name);
-				savedPriorityCell.set(priority);
+				existingNameString.insertText(0, name);
+				existingPriorityCell.set(priority);
 			}
 
-			// Now look for differences between draftData and savedData
+			// Now look for differences between draftData and externalDataSnapshot
 			const task = this.tasks.get(id);
 			if (task === undefined) {
 				// A new task was added from external source, add it to the Fluid data.
@@ -296,12 +296,12 @@ export class TaskList extends DataObject implements ITaskList {
 				return;
 			}
 			// External change has come in AND local change has happened, so there is some conflict to resolve
-			if (incomingNameDiffersFromSavedName && task.name.getText() !== name) {
-				task.incomingNameChanged(name);
+			if (externalNameDiffersFromSavedName && task.name.getText() !== name) {
+				task.externalNameChanged(name);
 			}
 			// External change has come in AND local change has happened, so there is some conflict to resolve
-			if (incomingPriorityDiffersFromSavedPriority && task.priority !== priority) {
-				task.incomingPriorityChanged(priority);
+			if (externalPriorityDiffersFromSavedPriority && task.priority !== priority) {
+				task.externalPriorityChanged(priority);
 			}
 		});
 		await Promise.all(updateTaskPs);
@@ -348,9 +348,9 @@ export class TaskList extends DataObject implements ITaskList {
 
 	protected async initializingFirstTime(): Promise<void> {
 		this._draftData = SharedMap.create(this.runtime);
-		this._savedData = SharedMap.create(this.runtime);
+		this._externalDataSnapshot = SharedMap.create(this.runtime);
 		this.root.set("draftData", this._draftData.handle);
-		this.root.set("savedData", this._savedData.handle);
+		this.root.set("externalDataSnapshot", this._externalDataSnapshot.handle);
 		// TODO: Probably don't need to await this once the sync'ing flow is solid, we can just trust it to sync
 		// at some point in the future.
 		await this.importExternalData();
@@ -361,11 +361,11 @@ export class TaskList extends DataObject implements ITaskList {
 	 * DataObject, by registering an event listener for changes to the task list.
 	 */
 	protected async hasInitialized(): Promise<void> {
-		const saved = this.root.get<IFluidHandle<SharedMap>>("savedData");
+		const saved = this.root.get<IFluidHandle<SharedMap>>("externalDataSnapshot");
 		if (saved === undefined) {
-			throw new Error("savedData was not initialized");
+			throw new Error("externalDataSnapshot was not initialized");
 		}
-		this._savedData = await saved.get();
+		this._externalDataSnapshot = await saved.get();
 
 		const draft = this.root.get<IFluidHandle<SharedMap>>("draftData");
 		if (draft === undefined) {
