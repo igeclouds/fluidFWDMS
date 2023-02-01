@@ -20,10 +20,10 @@ const updateTabForId = (id: string): void => {
 	document.title = id;
 };
 
-const render = (model: IAppModel, showExternalServerView: boolean): void => {
+const render = (model: IAppModel, showExternalServerView: boolean, isLeader: boolean): void => {
 	const appDiv = document.querySelector("#app") as HTMLDivElement;
 	ReactDOM.unmountComponentAtNode(appDiv);
-	ReactDOM.render(React.createElement(AppView, { model }), appDiv);
+	ReactDOM.render(React.createElement(AppView, { model, isLeader }), appDiv);
 
 	// The DebugView is just for demo purposes, to offer manual controls and inspectability for things that normally
 	// would be some external system or arbitrarily occurring.
@@ -42,6 +42,7 @@ async function start(): Promise<void> {
 	let id: string;
 	let model: IAppModel;
 	let showExternalServerView: boolean = true;
+    let isLeader: boolean = true;
 
 	if (location.hash.length === 0) {
 		// Normally our code loader is expected to match up with the version passed here.
@@ -51,13 +52,15 @@ async function start(): Promise<void> {
 		model = createResponse.model;
 
 		id = await createResponse.attach();
+        isLeader = true;
 	} else {
 		id = location.hash.slice(1);
 		model = await tinyliciousModelLoader.loadExisting(id);
-		showExternalServerView = true;
+		showExternalServerView = false;
+        isLeader = false;
 	}
 
-	render(model, showExternalServerView);
+	render(model, showExternalServerView, isLeader);
 	updateTabForId(id);
 }
 

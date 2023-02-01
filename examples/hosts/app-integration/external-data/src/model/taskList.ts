@@ -58,18 +58,22 @@ class Task extends TypedEventEmitter<ITaskEvents> implements ITask {
 	) {
 		super();
 		this._name.on("sequenceDelta", () => {
+            this.externalName = undefined;
+            this.changeType = undefined;
 			this.emit("nameChanged");
 		});
 		this._priority.on("valueChanged", () => {
+            this.externalPriority = undefined;
+            this.changeType = undefined;
 			this.emit("priorityChanged");
 		});
 	}
-	public externalNameChanged = (externalName: string): void => {
-		this.changeType = "change";
+	public externalNameChanged = (externalName: string | undefined): void => {
+        this.changeType = externalName === undefined ? undefined : "change";
 		this.externalName = externalName;
 	};
-	public externalPriorityChanged = (externalPriority: number): void => {
-		this.changeType = "change";
+	public externalPriorityChanged = (externalPriority: number | undefined): void => {
+        this.changeType = externalPriority === undefined ? undefined : "change";
 		this.externalPriority = externalPriority;
 	};
 	public overwriteWithExternalData = (): void => {
@@ -99,6 +103,7 @@ interface PersistedTask {
  * The TaskList is our data object that implements the ITaskList interface.
  */
 export class TaskList extends DataObject implements ITaskList {
+	readonly isLeader: boolean = true;
 	/**
 	 * The tasks collection holds local facades on the data.  These facades encapsulate the data for a single task
 	 * so we don't have to hand out references to the whole SharedDirectory.  Additionally, we only create them

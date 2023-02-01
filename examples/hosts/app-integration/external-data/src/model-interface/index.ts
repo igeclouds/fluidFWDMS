@@ -152,6 +152,8 @@ export interface ITaskList extends IEventProvider<ITaskListEvents> {
 	 */
 	readonly importExternalData: () => Promise<void>;
 
+    isLeader: boolean;
+
 	// TODO: Should there be an imperative API to trigger importing changes from the external source?
 	// Even if we don't want this to be how the signal gets routed, we might want a "fetch latest changes" button
 	// in the UI.

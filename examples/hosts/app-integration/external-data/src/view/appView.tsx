@@ -16,13 +16,14 @@ export interface IAppViewProps {
 	 * The Task List app model to be visualized.
 	 */
 	model: IAppModel;
+    isLeader: boolean;
 }
 
 /**
  * The AppView is made to pair with an AppModel and render its contents appropriately.
  */
 export const AppView: React.FC<IAppViewProps> = (props: IAppViewProps) => {
-	const { model } = props;
+	const { model, isLeader } = props;
 
-	return <TaskListView taskList={model.taskList} />;
+	return <TaskListView taskList={model.taskList} isLeader={isLeader} />;
 };

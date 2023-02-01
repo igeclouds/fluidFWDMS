@@ -12,13 +12,14 @@ import type { ITask, ITaskList } from "../model-interface";
 interface ITaskRowProps {
 	readonly task: ITask;
 	readonly deleteTask: () => void;
+    readonly isLeader: boolean;
 }
 
 /**
  * The view for a single task in the TaskListView, as a table row.
  */
 const TaskRow: React.FC<ITaskRowProps> = (props: ITaskRowProps) => {
-	const { task, deleteTask } = props;
+	const { task, deleteTask, isLeader } = props;
 	const priorityRef = useRef<HTMLInputElement>(null);
 	const [externalName, setExternalName] = useState<string | undefined>(task.externalName);
 	const [externalPriority, setExternalPriority] = useState<number | undefined>(
@@ -32,11 +33,19 @@ const TaskRow: React.FC<ITaskRowProps> = (props: ITaskRowProps) => {
 			}
 		};
 		const showExternalPriority = (): void => {
-			setExternalPriority(task.externalPriority);
+            if (isLeader) {
+                setExternalPriority(task.externalPriority);
+            } else {
+                setExternalName("External Name Changed");
+            }
 			setChangeType(task.changeType);
 		};
 		const showExternalName = (): void => {
-			setExternalName(task.externalName);
+            if (isLeader) {
+                setExternalName(task.externalName)
+            } else {
+                setExternalName("External Name Changed");
+            }
 			setChangeType(task.changeType);
 		};
 		task.on("priorityChanged", updateFromRemotePriority);
@@ -55,10 +64,12 @@ const TaskRow: React.FC<ITaskRowProps> = (props: ITaskRowProps) => {
 		task.priority = newValue;
 	};
 
-	const diffVisible = changeType === undefined;
-	const showPriority = !diffVisible && externalPriority !== undefined ? "visible" : "hidden";
-	const showName = !diffVisible && externalName !== undefined ? "visible" : "hidden";
-	const showAcceptButton = diffVisible ? "hidden" : "visible";
+     console.log(isLeader);
+
+	const diffVisible = changeType !== undefined;
+	const showPriority = diffVisible && externalPriority !== undefined ? "visible" : "hidden";
+	const showName = diffVisible && externalName !== undefined ? "visible" : "hidden";
+	const showAcceptButton = isLeader && diffVisible ? "visible" : "hidden" ;
 
 	let diffColor: string = "white";
 	switch (changeType) {
@@ -119,13 +130,14 @@ const TaskRow: React.FC<ITaskRowProps> = (props: ITaskRowProps) => {
  */
 export interface ITaskListViewProps {
 	readonly taskList: ITaskList;
+    readonly isLeader: boolean;
 }
 
 /**
  * A tabular, editable view of the task list.  Includes a save button to sync the changes back to the data source.
  */
 export const TaskListView: React.FC<ITaskListViewProps> = (props: ITaskListViewProps) => {
-	const { taskList } = props;
+	const { taskList, isLeader } = props;
 
 	const [tasks, setTasks] = useState<ITask[]>(taskList.getTasks());
 	useEffect(() => {
@@ -142,7 +154,7 @@ export const TaskListView: React.FC<ITaskListViewProps> = (props: ITaskListViewP
 	}, [taskList]);
 
 	const taskRows = tasks.map((task: ITask) => (
-		<TaskRow key={task.id} task={task} deleteTask={(): void => taskList.deleteTask(task.id)} />
+		<TaskRow key={task.id} task={task} deleteTask={(): void => taskList.deleteTask(task.id)} isLeader={isLeader} />
 	));
 
 	return (
@@ -160,7 +172,7 @@ export const TaskListView: React.FC<ITaskListViewProps> = (props: ITaskListViewP
 				</thead>
 				<tbody>{taskRows}</tbody>
 			</table>
-			<button onClick={taskList.saveChanges}>Save changes</button>
+			{isLeader && <button onClick={taskList.saveChanges}>Save changes</button>}
 		</div>
 	);
 };

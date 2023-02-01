@@ -6,6 +6,8 @@ Please note that the ideas explored here are experimental and under development.
 
 ## Scenario
 
+TODO KG:  Explain the concept of drafting surface and savedData
+
 TBD
 
 ## Strategy overview
